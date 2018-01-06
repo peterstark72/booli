@@ -96,15 +96,29 @@ type Location struct {
 	Address    Address  `json:"address"`
 }
 
+//Source is the source
+type Source struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+	Type string `json:"type"`
+}
+
 //Property is an actual property
 type Property struct {
-	Location  Location `json:"location"`
-	ListPrice int      `json:"listPrice"`
-	SoldPrice int      `json:"soldPrice"`
-	SoldDate  string   `json:"soldDate"`
-	BooliID   int      `json:"booliId"`
-	Published string   `json:"published"`
-	URL       string   `json:"url"`
+	Location         Location `json:"location"`
+	ListPrice        int      `json:"listPrice"`
+	SoldPrice        int      `json:"soldPrice"`
+	SoldDate         string   `json:"soldDate"`
+	BooliID          int      `json:"booliId"`
+	Published        string   `json:"published"`
+	URL              string   `json:"url"`
+	ObjectType       string   `json:"objectType"`
+	Rooms            int      `json:"rooms"`
+	LivingArea       int      `json:"livingArea"`
+	Rent             int      `json:"rent"`
+	Floor            int      `json:"floor"`
+	ConstructionYear int      `json:"constructionYear"`
+	Source           Source   `json:"source"`
 }
 
 //Area is an area
