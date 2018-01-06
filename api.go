@@ -40,14 +40,31 @@ const MaxLimitResponseSize = 100
 //CallerID and PrivateKey are set in init()
 var callerID, privateKey string
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-	callerID = os.Getenv("BOOLI_CALLER_ID")
-	privateKey = os.Getenv("BOOLI_PRIVATE_KEY")
-}
-
 //letters are used to create random strings
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789"
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+	if callerID = os.Getenv("BOOLI_CALLER_ID"); callerID == "" {
+		panic("Missing Booli callerID")
+	}
+	if privateKey = os.Getenv("BOOLI_PRIVATE_KEY"); privateKey == "" {
+		panic("Missing Booli privateKey")
+	}
+}
+
+type Client struct {
+	Transport *http.Client
+}
+
+var DefaultClient = &Client{}
+
+func (c Client) transport() *http.Client {
+	if c.Transport != nil {
+		return c.Transport
+	}
+	return new(http.Client)
+}
 
 //srand returns random string of size
 func srand(size int) string {
@@ -119,7 +136,7 @@ type Response struct {
 /*load gets one page of response data from path.
 It returns the data and an error code.
 */
-func load(path string, params Query) ([]byte, error) {
+func (c Client) get(path string, params Query) ([]byte, error) {
 
 	//Create auth values
 	timestamp := fmt.Sprintf("%v", time.Now().Unix())
@@ -141,7 +158,7 @@ func load(path string, params Query) ([]byte, error) {
 
 	//Build URL and make request
 	u := RootURL + path + "?" + q.Encode()
-	res, err := http.Get(u)
+	res, err := c.transport().Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +169,7 @@ func load(path string, params Query) ([]byte, error) {
 }
 
 //paginator returns an iterator for all page responses
-func paginator(resource string, params Query) chan Response {
+func (c Client) paginator(resource string, params Query) chan Response {
 
 	ch := make(chan Response)
 
@@ -166,7 +183,7 @@ func paginator(resource string, params Query) chan Response {
 			params["limit"] = strconv.Itoa(limit)
 			params["offset"] = strconv.Itoa(offset)
 
-			data, err := load(resource, params)
+			data, err := c.get(resource, params)
 			if err != nil {
 				break
 			}
@@ -186,10 +203,10 @@ func paginator(resource string, params Query) chan Response {
 }
 
 //GetManySold iterates sold properties
-func GetManySold(params Query) chan Property {
+func (c Client) GetManySold(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
-		for resp := range paginator(SoldResource, params) {
+		for resp := range c.paginator(SoldResource, params) {
 			for _, a := range resp.Sold {
 				ch <- a
 			}
@@ -199,11 +216,16 @@ func GetManySold(params Query) chan Property {
 	return ch
 }
 
+//GetManySold iterates sold properties
+func GetManySold(params Query) chan Property {
+	return DefaultClient.GetManySold(params)
+}
+
 //GetManyListings iterates listed properties
-func GetManyListings(params Query) chan Property {
+func (c Client) GetManyListings(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
-		for resp := range paginator(ListingsResource, params) {
+		for resp := range c.paginator(ListingsResource, params) {
 			for _, p := range resp.Listings {
 				ch <- p
 			}
@@ -213,11 +235,16 @@ func GetManyListings(params Query) chan Property {
 	return ch
 }
 
+//GetManyListings iterates sold properties
+func GetManyListings(params Query) chan Property {
+	return DefaultClient.GetManyListings(params)
+}
+
 //GetManyAreas iterates areas
-func GetManyAreas(params Query) chan Area {
+func (c Client) GetManyAreas(params Query) chan Area {
 	ch := make(chan Area)
 	go func() {
-		for resp := range paginator(AreasResource, params) {
+		for resp := range c.paginator(AreasResource, params) {
 			for _, a := range resp.Areas {
 				ch <- a
 			}
@@ -225,6 +252,11 @@ func GetManyAreas(params Query) chan Area {
 		close(ch)
 	}()
 	return ch
+}
+
+//GetManyListings iterates sold properties
+func GetManyAreas(params Query) chan Area {
+	return DefaultClient.GetManyAreas(params)
 }
 
 //GetPictureURL builds picture URL: https://www.booli.se/api/#images

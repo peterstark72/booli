@@ -3,9 +3,9 @@
 A simple Go wrapper for the [Booli API](https://www.booli.se/api).
 
 The following functions are available:
-* GetManyListings - iterates over all "/listings"
-* GetManySold - iterates over all "/sold"
-* GetManyAreas - iterates over all "/areas"
+* GetManyListings : iterates over all "/listings"
+* GetManySold : iterates over all "/sold"
+* GetManyAreas : iterates over all "/areas"
 
 Note that the functions returns iterators that take care of pagination in the background. If you only want the first 100 result items, you need to count the results and cancel yourself (see example below).
 
@@ -49,3 +49,19 @@ func main() {
 	}
 }
 ``` 
+
+### Use with Google Appengine (GAE)
+
+If you are using this client with GAE you must use the GAE HTTP service instead of the standard Go HTTP. 
+You do this by creating a booli.Client and set the Transport field to the GAE HTTP client. 
+
+```
+c := appengine.NewContext(r)
+client := urlfetch.Client(c)
+
+api := booli.Client{
+		Transport: client,
+	}
+
+api.GetManySold(booli.Query{"q": "nacka"})
+```
