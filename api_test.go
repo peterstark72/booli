@@ -8,10 +8,11 @@ import (
 
 func TestSold(t *testing.T) {
 
-	query := booli.Query{"q": "Malmö", "minSoldDate": "20170101"}
+	query := booli.Query{"q": "Tygelsjö", "objectType": "villa"}
 
 	var solds []booli.Property
 	for p := range booli.GetManySold(query) {
+		t.Logf("%s | %s", p.Location.Address, p.ObjectType)
 		solds = append(solds, p)
 	}
 	if len(solds) == 0 {
@@ -21,7 +22,7 @@ func TestSold(t *testing.T) {
 
 func TestListings(t *testing.T) {
 
-	query := booli.Query{"q": "Malmö"}
+	query := booli.Query{"q": "Tygelsjö"}
 
 	var solds []booli.Property
 	for p := range booli.GetManyListings(query) {

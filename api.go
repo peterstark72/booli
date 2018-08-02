@@ -204,6 +204,7 @@ func (c Client) paginator(resource string, params Query) chan Response {
 
 			var resp Response
 			json.Unmarshal(data, &resp)
+
 			ch <- resp
 
 			offset += limit
