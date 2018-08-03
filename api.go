@@ -231,9 +231,17 @@ func (c Client) GetManySold(params Query) chan Property {
 	return ch
 }
 
-//GetManySold iterates sold properties
-func GetManySold(params Query) chan Property {
+//IterSold iterates sold properties
+func IterSold(params Query) chan Property {
 	return DefaultClient.GetManySold(params)
+}
+
+//GetAllSold returns all sold properties in one looong list
+func GetAllSold(params Query) (ps []Property) {
+	for p := range IterSold(params) {
+		ps = append(ps, p)
+	}
+	return
 }
 
 //GetManyListings iterates listed properties
@@ -250,9 +258,18 @@ func (c Client) GetManyListings(params Query) chan Property {
 	return ch
 }
 
-//GetManyListings iterates sold properties
-func GetManyListings(params Query) chan Property {
+//IterListings iterates sold properties
+func IterListings(params Query) chan Property {
 	return DefaultClient.GetManyListings(params)
+}
+
+//GetAllListings returns all listings in one looong list
+func GetAllListings(params Query) (ps []Property) {
+	for p := range IterListings(params) {
+		ps = append(ps, p)
+	}
+
+	return
 }
 
 //GetManyAreas iterates areas
