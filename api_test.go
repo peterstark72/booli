@@ -11,7 +11,7 @@ func TestSold(t *testing.T) {
 	query := booli.Query{"q": "Tygelsjö", "objectType": "villa"}
 
 	var solds []booli.Property
-	for p := range booli.IterSold(query) {
+	for p := range booli.Sold(query) {
 		t.Logf("%s | %s", p.Location.Address, p.ObjectType)
 		solds = append(solds, p)
 	}
@@ -25,7 +25,20 @@ func TestListings(t *testing.T) {
 	query := booli.Query{"q": "Tygelsjö"}
 
 	var solds []booli.Property
-	for p := range booli.IterListings(query) {
+	for p := range booli.Listings(query) {
+		solds = append(solds, p)
+	}
+	if len(solds) == 0 {
+		t.Error("No listings")
+	}
+}
+
+func TestListingsAreaId(t *testing.T) {
+
+	query := booli.Query{"areaId": "117099,866229"}
+
+	var solds []booli.Property
+	for p := range booli.Listings(query) {
 		solds = append(solds, p)
 	}
 	if len(solds) == 0 {
@@ -38,7 +51,7 @@ func TestAreas(t *testing.T) {
 	query := booli.Query{"q": "Malmö"}
 
 	var areas []booli.Area
-	for a := range booli.GetManyAreas(query) {
+	for a := range booli.Areas(query) {
 		areas = append(areas, a)
 	}
 	if len(areas) == 0 {

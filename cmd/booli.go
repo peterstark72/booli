@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/peterstark72/booli"
@@ -9,11 +9,13 @@ import (
 
 func main() {
 
-	q := booli.Query{"q": "Tygelsjö"}
+	if len(os.Args) < 2 {
+		panic("Usage: booli <query>")
+	}
 
-	properties := booli.GetAllListings(q)
+	q := booli.Query{"q": os.Args[1]}
+	for p := range booli.Listings(q) {
+		fmt.Println(p)
+	}
 
-	d, _ := json.Marshal(properties)
-
-	os.Stdout.Write(d)
 }

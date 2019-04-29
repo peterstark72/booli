@@ -1,9 +1,4 @@
-/*Package booli is a Go wrapper for the Booli API.
-
-
-
-
- */
+//Package booli is a Go wrapper for the Booli API.
 package booli
 
 import (
@@ -21,9 +16,9 @@ import (
 
 //Available API resources
 const (
-	ListingsResource = "/listings"
-	SoldResource     = "/sold"
-	AreasResource    = "/areas"
+	ListingsResource = "listings"
+	SoldResource     = "sold"
+	AreasResource    = "areas"
 )
 
 //TimeLayout is used in response data
@@ -32,6 +27,7 @@ const TimeLayout = "2006-01-02 15:04:06"
 //DateLayout is used in query parameters
 const DateLayout = "20060120"
 
+//RootURL is Booli API URL
 const RootURL = "https://api.booli.se"
 
 //MaxLimitResponseSize is default size of API responses
@@ -53,19 +49,6 @@ func init() {
 	}
 }
 
-type Client struct {
-	Transport *http.Client
-}
-
-var DefaultClient = &Client{}
-
-func (c Client) transport() *http.Client {
-	if c.Transport != nil {
-		return c.Transport
-	}
-	return new(http.Client)
-}
-
 //srand returns random string of size
 func srand(size int) string {
 	buf := make([]byte, size)
@@ -79,31 +62,39 @@ func srand(size int) string {
 //Query is Booli query parameters
 type Query map[string]string
 
-//Position in WGS84 coordinates
+//Position see https://www.booli.se/p/api/referens/
 type Position struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
 
+//Address see https://www.booli.se/p/api/referens/
 type Address struct {
 	StreetAddress string `json:"streetAddress"`
 }
 
-//Location is collection of location elements
+//Region see https://www.booli.se/p/api/referens/
+type Region struct {
+	MunicipalityName string `json:"municipalityName"`
+	CountyName       string `json:"countyName"`
+}
+
+//Location see https://www.booli.se/p/api/referens/
 type Location struct {
 	Position   Position `json:"position"`
 	NamedAreas []string `json:"namedAreas"`
 	Address    Address  `json:"address"`
+	Region     Region   `json:"region"`
 }
 
-//Source is the source
+//Source see https://www.booli.se/p/api/referens/
 type Source struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 	Type string `json:"type"`
 }
 
-//Property is an actual property
+//Property see https://www.booli.se/p/api/referens/
 type Property struct {
 	Location         Location `json:"location"`
 	ListPrice        int      `json:"listPrice"`
@@ -140,17 +131,16 @@ type Pagination struct {
 	Limit      int `json:"limit"`
 }
 
+//Response is a generic API Response container
 type Response struct {
 	Pagination
-	Sold     []Property `json:"sold"`
-	Listings []Property `json:"listings"`
-	Areas    []Area     `json:"areas"`
+	Sold     []Property `json:"sold"`     //Either this
+	Areas    []Area     `json:"areas"`    // or this
+	Listings []Property `json:"listings"` // or this
 }
 
-/*load gets one page of response data from path.
-It returns the data and an error code.
-*/
-func (c Client) get(path string, params Query) ([]byte, error) {
+//get gets one page of response data from path.
+func get(path string, params Query) ([]byte, error) {
 
 	//Create auth values
 	timestamp := fmt.Sprintf("%v", time.Now().Unix())
@@ -171,8 +161,8 @@ func (c Client) get(path string, params Query) ([]byte, error) {
 	}
 
 	//Build URL and make request
-	u := RootURL + path + "?" + q.Encode()
-	res, err := c.transport().Get(u)
+	u := RootURL + "/" + path + "?" + q.Encode()
+	res, err := http.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +173,7 @@ func (c Client) get(path string, params Query) ([]byte, error) {
 }
 
 //paginator returns an iterator for all page responses
-func (c Client) paginator(resource string, params Query) chan Response {
+func paginator(resource string, params Query) chan Response {
 
 	ch := make(chan Response)
 
@@ -197,7 +187,7 @@ func (c Client) paginator(resource string, params Query) chan Response {
 			params["limit"] = strconv.Itoa(limit)
 			params["offset"] = strconv.Itoa(offset)
 
-			data, err := c.get(resource, params)
+			data, err := get(resource, params)
 			if err != nil {
 				break
 			}
@@ -217,11 +207,11 @@ func (c Client) paginator(resource string, params Query) chan Response {
 	return ch
 }
 
-//GetManySold iterates sold properties
-func (c Client) GetManySold(params Query) chan Property {
+//Sold iterates sold properties
+func Sold(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
-		for resp := range c.paginator(SoldResource, params) {
+		for resp := range paginator(SoldResource, params) {
 			for _, a := range resp.Sold {
 				ch <- a
 			}
@@ -231,53 +221,12 @@ func (c Client) GetManySold(params Query) chan Property {
 	return ch
 }
 
-//IterSold iterates sold properties
-func IterSold(params Query) chan Property {
-	return DefaultClient.GetManySold(params)
-}
-
-//GetAllSold returns all sold properties in one looong list
-func GetAllSold(params Query) (ps []Property) {
-	for p := range IterSold(params) {
-		ps = append(ps, p)
-	}
-	return
-}
-
-//GetManyListings iterates listed properties
-func (c Client) GetManyListings(params Query) chan Property {
+//Listings iterates listed properties
+func Listings(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
-		for resp := range c.paginator(ListingsResource, params) {
-			for _, p := range resp.Listings {
-				ch <- p
-			}
-		}
-		close(ch)
-	}()
-	return ch
-}
-
-//IterListings iterates sold properties
-func IterListings(params Query) chan Property {
-	return DefaultClient.GetManyListings(params)
-}
-
-//GetAllListings returns all listings in one looong list
-func GetAllListings(params Query) (ps []Property) {
-	for p := range IterListings(params) {
-		ps = append(ps, p)
-	}
-
-	return
-}
-
-//GetManyAreas iterates areas
-func (c Client) GetManyAreas(params Query) chan Area {
-	ch := make(chan Area)
-	go func() {
-		for resp := range c.paginator(AreasResource, params) {
-			for _, a := range resp.Areas {
+		for resp := range paginator(ListingsResource, params) {
+			for _, a := range resp.Listings {
 				ch <- a
 			}
 		}
@@ -286,9 +235,18 @@ func (c Client) GetManyAreas(params Query) chan Area {
 	return ch
 }
 
-//GetManyListings iterates sold properties
-func GetManyAreas(params Query) chan Area {
-	return DefaultClient.GetManyAreas(params)
+//Areas iterates areas
+func Areas(params Query) chan Area {
+	ch := make(chan Area)
+	go func() {
+		for resp := range paginator(AreasResource, params) {
+			for _, a := range resp.Areas {
+				ch <- a
+			}
+		}
+		close(ch)
+	}()
+	return ch
 }
 
 //GetPictureURL builds picture URL: https://www.booli.se/api/#images
