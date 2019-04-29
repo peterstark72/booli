@@ -29,8 +29,6 @@ import (
 	"github.com/peterstark72/booli"
 )
 
-const MaxResults = 100
-
 func main() {
 
 	query := booli.Query{"q": "Tygelsjö"}
