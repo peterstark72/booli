@@ -2,17 +2,18 @@ package booli_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/peterstark72/booli"
 )
 
 func TestSold(t *testing.T) {
 
-	query := booli.Query{"q": "Tygelsjö", "objectType": "villa"}
+	query := booli.Query{"q": "Tygelsjö", "objectType": "Villa"}
 
 	var solds []booli.Property
 	for p := range booli.Sold(query) {
-		t.Logf("%s | %s", p.Location.Address, p.ObjectType)
+		t.Logf("%s, %s, %s", p.Location.Address, p.ObjectType, time.Time(p.SoldDate).Format("2006-01-02"))
 		solds = append(solds, p)
 	}
 	if len(solds) == 0 {
@@ -26,6 +27,7 @@ func TestListings(t *testing.T) {
 
 	var solds []booli.Property
 	for p := range booli.Listings(query) {
+		t.Logf("%s, %s, %s", p.Location.Address, p.ObjectType, time.Time(p.Published).Format("2006-01-02"))
 		solds = append(solds, p)
 	}
 	if len(solds) == 0 {

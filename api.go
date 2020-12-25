@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -20,12 +22,6 @@ const (
 	SoldResource     = "sold"
 	AreasResource    = "areas"
 )
-
-//TimeLayout is used in response data
-const TimeLayout = "2006-01-02 15:04:06"
-
-//DateLayout is used in query parameters
-const DateLayout = "20060120"
 
 //RootURL is Booli API URL
 const RootURL = "https://api.booli.se"
@@ -94,22 +90,56 @@ type Source struct {
 	Type string `json:"type"`
 }
 
+//PublishedDate is on the "2006-01-02 15:04:05" format
+type PublishedDate time.Time
+
+//UnmarshalJSON parses Booli published date
+func (j *PublishedDate) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	t, err := time.Parse("2006-01-02 15:04:05", s)
+	if err != nil {
+		return err
+	}
+	*j = PublishedDate(t)
+	return nil
+}
+
+//SoldDate is on the 2006-01-02 format
+type SoldDate time.Time
+
+//UnmarshalJSON parses Booli published date
+func (j *SoldDate) UnmarshalJSON(b []byte) error {
+	s := strings.Trim(string(b), "\"")
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return err
+	}
+	*j = SoldDate(t)
+	return nil
+}
+
+//Format formats a SoldDate
+func (j SoldDate) Format(s string) string {
+	t := time.Time(j)
+	return t.Format(s)
+}
+
 //Property see https://www.booli.se/p/api/referens/
 type Property struct {
-	Location         Location `json:"location"`
-	ListPrice        int      `json:"listPrice"`
-	SoldPrice        int      `json:"soldPrice"`
-	SoldDate         string   `json:"soldDate"`
-	BooliID          int      `json:"booliId"`
-	Published        string   `json:"published"`
-	URL              string   `json:"url"`
-	ObjectType       string   `json:"objectType"`
-	Rooms            int      `json:"rooms"`
-	LivingArea       int      `json:"livingArea"`
-	Rent             int      `json:"rent"`
-	Floor            int      `json:"floor"`
-	ConstructionYear int      `json:"constructionYear"`
-	Source           Source   `json:"source"`
+	Location         Location      `json:"location"`
+	ListPrice        int           `json:"listPrice"`
+	SoldPrice        int           `json:"soldPrice"`
+	SoldDate         SoldDate      `json:"soldDate"`
+	BooliID          int           `json:"booliId"`
+	Published        PublishedDate `json:"published"`
+	URL              string        `json:"url"`
+	ObjectType       string        `json:"objectType"`
+	Rooms            float32       `json:"rooms"`
+	LivingArea       int           `json:"livingArea"`
+	Rent             int           `json:"rent"`
+	Floor            int           `json:"floor"`
+	ConstructionYear int           `json:"constructionYear"`
+	Source           Source        `json:"source"`
 }
 
 //Area is an area
@@ -119,7 +149,7 @@ type Area struct {
 	Types         []string `json:"types"`
 	ParentBooliID int      `json:"parentBooliId"`
 	ParentName    string   `json:"parentName"`
-	ParentTypes   string   `json:"parentTypes"`
+	ParentTypes   []string `json:"parentTypes"`
 	FullName      string   `json:"fullName"`
 }
 
@@ -193,7 +223,11 @@ func paginator(resource string, params Query) chan Response {
 			}
 
 			var resp Response
-			json.Unmarshal(data, &resp)
+			err = json.Unmarshal(data, &resp)
+			if err != nil {
+				log.Printf("Could not unmarshal. %s", err)
+				break
+			}
 
 			ch <- resp
 
