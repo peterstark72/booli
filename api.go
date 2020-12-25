@@ -135,7 +135,7 @@ type Property struct {
 	URL              string        `json:"url"`
 	ObjectType       string        `json:"objectType"`
 	Rooms            float32       `json:"rooms"`
-	LivingArea       int           `json:"livingArea"`
+	LivingArea       float32       `json:"livingArea"`
 	Rent             int           `json:"rent"`
 	Floor            int           `json:"floor"`
 	ConstructionYear int           `json:"constructionYear"`

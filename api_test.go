@@ -9,7 +9,7 @@ import (
 
 func TestSold(t *testing.T) {
 
-	query := booli.Query{"q": "Tygelsjö", "objectType": "Villa"}
+	query := booli.Query{"q": "Tygelsjö"}
 
 	var solds []booli.Property
 	for p := range booli.Sold(query) {
