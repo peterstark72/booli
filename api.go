@@ -1,4 +1,4 @@
-//Package booli is a Go wrapper for the Booli API.
+// Package booli is a Go wrapper for the Booli API.
 package booli
 
 import (
@@ -16,23 +16,23 @@ import (
 	"time"
 )
 
-//Available API resources
+// Available API resources
 const (
 	ListingsResource = "listings"
 	SoldResource     = "sold"
 	AreasResource    = "areas"
 )
 
-//RootURL is Booli API URL
+// RootURL is Booli API URL
 const RootURL = "https://api.booli.se"
 
-//MaxLimitResponseSize is default size of API responses
+// MaxLimitResponseSize is default size of API responses
 const MaxLimitResponseSize = 100
 
-//CallerID and PrivateKey are set in init()
+// CallerID and PrivateKey are set in init()
 var callerID, privateKey string
 
-//letters are used to create random strings
+// letters are used to create random strings
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789"
 
 func init() {
@@ -45,7 +45,7 @@ func init() {
 	}
 }
 
-//srand returns random string of size
+// srand returns random string of size
 func srand(size int) string {
 	buf := make([]byte, size)
 	for i := 0; i < size; i++ {
@@ -55,27 +55,27 @@ func srand(size int) string {
 	return string(buf)
 }
 
-//Query is Booli query parameters
+// Query is Booli query parameters
 type Query map[string]string
 
-//Position see https://www.booli.se/p/api/referens/
+// Position see https://www.booli.se/p/api/referens/
 type Position struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
 
-//Address see https://www.booli.se/p/api/referens/
+// Address see https://www.booli.se/p/api/referens/
 type Address struct {
 	StreetAddress string `json:"streetAddress"`
 }
 
-//Region see https://www.booli.se/p/api/referens/
+// Region see https://www.booli.se/p/api/referens/
 type Region struct {
 	MunicipalityName string `json:"municipalityName"`
 	CountyName       string `json:"countyName"`
 }
 
-//Location see https://www.booli.se/p/api/referens/
+// Location see https://www.booli.se/p/api/referens/
 type Location struct {
 	Position   Position `json:"position"`
 	NamedAreas []string `json:"namedAreas"`
@@ -83,17 +83,17 @@ type Location struct {
 	Region     Region   `json:"region"`
 }
 
-//Source see https://www.booli.se/p/api/referens/
+// Source see https://www.booli.se/p/api/referens/
 type Source struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 	Type string `json:"type"`
 }
 
-//PublishedDate is on the "2006-01-02 15:04:05" format
+// PublishedDate is on the "2006-01-02 15:04:05" format
 type PublishedDate time.Time
 
-//UnmarshalJSON parses Booli published date
+// UnmarshalJSON parses Booli published date
 func (j *PublishedDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 	t, err := time.Parse("2006-01-02 15:04:05", s)
@@ -104,10 +104,10 @@ func (j *PublishedDate) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-//SoldDate is on the 2006-01-02 format
+// SoldDate is on the 2006-01-02 format
 type SoldDate time.Time
 
-//UnmarshalJSON parses Booli published date
+// UnmarshalJSON parses Booli published date
 func (j *SoldDate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 	t, err := time.Parse("2006-01-02", s)
@@ -118,31 +118,33 @@ func (j *SoldDate) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-//Format formats a SoldDate
+// Format formats a SoldDate
 func (j SoldDate) Format(s string) string {
 	t := time.Time(j)
 	return t.Format(s)
 }
 
-//Property see https://www.booli.se/p/api/referens/
+// Property see https://www.booli.se/p/api/referens/
 type Property struct {
-	Location         Location      `json:"location"`
-	ListPrice        int           `json:"listPrice"`
-	SoldPrice        int           `json:"soldPrice"`
-	SoldDate         SoldDate      `json:"soldDate"`
-	BooliID          int           `json:"booliId"`
-	Published        PublishedDate `json:"published"`
-	URL              string        `json:"url"`
-	ObjectType       string        `json:"objectType"`
-	Rooms            float32       `json:"rooms"`
-	LivingArea       float32       `json:"livingArea"`
-	Rent             int           `json:"rent"`
-	Floor            int           `json:"floor"`
-	ConstructionYear int           `json:"constructionYear"`
-	Source           Source        `json:"source"`
+	Location          Location      `json:"location"`
+	ListPrice         int           `json:"listPrice"`
+	FirstPrice        int           `json:"firstPrice"`
+	SoldPrice         int           `json:"soldPrice"`
+	SoldDate          SoldDate      `json:"soldDate"`
+	BooliID           int           `json:"booliId"`
+	Published         PublishedDate `json:"published"`
+	URL               string        `json:"url"`
+	ObjectType        string        `json:"objectType"`
+	Rooms             float32       `json:"rooms"`
+	LivingArea        float32       `json:"livingArea"`
+	Rent              int           `json:"rent"`
+	Floor             int           `json:"floor"`
+	ConstructionYear  int           `json:"constructionYear"`
+	Source            Source        `json:"source"`
+	IsNewConstruction int           `json:"isNewConstruction"`
 }
 
-//Area is an area
+// Area is an area
 type Area struct {
 	BooliID       int      `json:"booliId"`
 	Name          string   `json:"string"`
@@ -153,7 +155,7 @@ type Area struct {
 	FullName      string   `json:"fullName"`
 }
 
-//Pagination defines https://www.booli.se/api/#pagination
+// Pagination defines https://www.booli.se/api/#pagination
 type Pagination struct {
 	Count      int `json:"count"`
 	TotalCount int `json:"totalCount"`
@@ -161,7 +163,7 @@ type Pagination struct {
 	Limit      int `json:"limit"`
 }
 
-//Response is a generic API Response container
+// Response is a generic API Response container
 type Response struct {
 	Pagination
 	Sold     []Property `json:"sold"`     //Either this
@@ -169,7 +171,7 @@ type Response struct {
 	Listings []Property `json:"listings"` // or this
 }
 
-//get gets one page of response data from path.
+// get gets one page of response data from path.
 func get(path string, params Query) ([]byte, error) {
 
 	//Create auth values
@@ -202,7 +204,7 @@ func get(path string, params Query) ([]byte, error) {
 
 }
 
-//paginator returns an iterator for all page responses
+// paginator returns an iterator for all page responses
 func paginator(resource string, params Query) chan Response {
 
 	ch := make(chan Response)
@@ -241,7 +243,7 @@ func paginator(resource string, params Query) chan Response {
 	return ch
 }
 
-//Sold iterates sold properties
+// Sold iterates sold properties
 func Sold(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
@@ -255,7 +257,7 @@ func Sold(params Query) chan Property {
 	return ch
 }
 
-//Listings iterates listed properties
+// Listings iterates listed properties
 func Listings(params Query) chan Property {
 	ch := make(chan Property)
 	go func() {
@@ -269,7 +271,7 @@ func Listings(params Query) chan Property {
 	return ch
 }
 
-//Areas iterates areas
+// Areas iterates areas
 func Areas(params Query) chan Area {
 	ch := make(chan Area)
 	go func() {
@@ -283,7 +285,7 @@ func Areas(params Query) chan Area {
 	return ch
 }
 
-//GetPictureURL builds picture URL: https://www.booli.se/api/#images
+// GetPictureURL builds picture URL: https://www.booli.se/api/#images
 func GetPictureURL(booliID int) string {
 	return fmt.Sprintf("https://api.bcdn.se/cache/primary_%v_140x94.jpg", booliID)
 }
