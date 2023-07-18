@@ -83,31 +83,11 @@ type Location struct {
 	Region     Region   `json:"region"`
 }
 
-func (l Location) toMap() map[string]interface{} {
-	return map[string]interface{}{
-		"address":    l.Address,
-		"region":     l.Region,
-		"namedAreas": l.NamedAreas,
-		"position": map[string]interface{}{
-			"latitude":  l.Position.Latitude,
-			"longitude": l.Position.Longitude,
-		},
-	}
-}
-
 // Source see https://www.booli.se/p/api/referens/
 type Source struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 	Type string `json:"type"`
-}
-
-func (s Source) toMap() map[string]interface{} {
-	return map[string]interface{}{
-		"name": s.Name,
-		"url":  s.URL,
-		"type": s.Type,
-	}
 }
 
 // PublishedDate is on the "2006-01-02 15:04:05" format
@@ -138,12 +118,6 @@ func (j *SoldDate) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Format formats a SoldDate
-func (j SoldDate) Format(s string) string {
-	t := time.Time(j)
-	return t.Format(s)
-}
-
 // Property see https://www.booli.se/p/api/referens/
 type Property struct {
 	Location            Location      `json:"location"`
@@ -172,38 +146,6 @@ type Property struct {
 	BiddingOpen         int           `json:"biddingOpen"`
 	MortgageDeed        int           `json:"mortageDeed"`
 	BuildingHasElevator int           `json:"buildingHasElevator"`
-}
-
-func (p Property) ToMap() map[string]interface{} {
-	d := map[string]interface{}{
-		"booliId":             p.BooliID,
-		"lastSeen":            time.Now().Format("2006-01-02"),
-		"source":              p.Source.toMap(),
-		"rooms":               p.Rooms,
-		"location":            p.Location.toMap(),
-		"constructionYear":    p.ConstructionYear,
-		"isNewConstruction":   bool(p.IsNewConstruction == 1),
-		"hasPatio":            bool(p.HasPatio == 1),
-		"hasSolarPanels":      bool(p.HasSolarPanels == 1),
-		"hasFireplace":        bool(p.HasFirePlace == 1),
-		"rent":                p.Rent,
-		"livingArea":          p.LivingArea,
-		"plotArea":            p.PlotArea,
-		"firstPrice":          p.FirstPrice,
-		"listPrice":           p.ListPrice,
-		"soldPrice":           p.SoldPrice,
-		"soldDate":            p.SoldDate.Format("2006-01-02"),
-		"listPriceChangeDate": time.Time(p.ListPriceChangeDate).Format("2006-01-02"),
-		"mortgageDeed":        p.MortgageDeed,
-		"additionalArea":      p.AdditionalArea,
-		"biddingOpen":         bool(p.BiddingOpen == 1),
-		"buildingHasElevator": bool(p.BuildingHasElevator == 1),
-		"objectType":          p.ObjectType,
-		"hasBalcony":          bool(p.HasBalcony == 1),
-		"url":                 p.URL,
-		"published":           time.Time(p.Published).Format("2006-01-02"),
-	}
-	return d
 }
 
 // Area is an area
