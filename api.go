@@ -290,7 +290,7 @@ func Areas(params Query) chan Area {
 	return ch
 }
 
-// GetPictureURL builds picture URL: https://www.booli.se/api/#images
-func GetPictureURL(booliID int) string {
-	return fmt.Sprintf("https://api.bcdn.se/cache/primary_%v_140x94.jpg", booliID)
+// ImageURL returns the image URL for a property
+func (p Property) ImageURL() string {
+	return fmt.Sprintf("https://bcdn.se/cache/primary_%v_140x94.jpg", p.BooliID)
 }

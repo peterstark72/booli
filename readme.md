@@ -17,7 +17,7 @@ q := booli.Query{"q": "nacka", "minListPrice": "1000000"}
 q := booli.Query{"q": "nacka", "objectType": "villa"}
 ```
 
-In addition, the ```GetPictureURL``` function returns URL to the thumbnail picture.
+In addition, the ```ImageURL``` method returns URL to the thumbnail picture.
 
 ### Example usage
 ```
@@ -36,8 +36,7 @@ func main() {
 	for p := range booli.Listings(query) {
 		fmt.Println(n, p.Location.Address.StreetAddress)
 
-		u := booli.GetPictureURL(p.BooliID)
-		fmt.Println(u)
+		fmt.Println(p.ImageURL())
 
 	}
 }
