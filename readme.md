@@ -41,3 +41,19 @@ func main() {
 	}
 }
 ``` 
+## Command Line tool
+
+The command line tool can be used in the following way.
+
+To query for listing for an area name.
+```
+go run cmd/main.go -q tygelsjö
+```
+To query for new builds for an area name.
+```
+go run cmd/main.go -q tygelsjö -newbuilds
+```
+To query for sold properties for an area name.
+```
+go run cmd/main.go -q tygelsjö -sold
+```

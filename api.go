@@ -5,7 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -36,7 +36,6 @@ var callerID, privateKey string
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789"
 
 func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
 	if callerID = os.Getenv("BOOLI_CALLER_ID"); callerID == "" {
 		panic("Missing Booli callerID")
 	}
@@ -148,6 +147,10 @@ type Property struct {
 	BuildingHasElevator int           `json:"buildingHasElevator"`
 }
 
+func (p Property) String() string {
+	return fmt.Sprintf("%s, %s, %s", p.Location.Address.StreetAddress, p.Location.Region.MunicipalityName, p.Location.Region.CountyName)
+}
+
 // Area is an area
 type Area struct {
 	BooliID       int      `json:"booliId"`
@@ -205,7 +208,7 @@ func get(path string, params Query) ([]byte, error) {
 	}
 	defer res.Body.Close()
 
-	return ioutil.ReadAll(res.Body)
+	return io.ReadAll(res.Body)
 
 }
 
@@ -291,6 +294,6 @@ func Areas(params Query) chan Area {
 }
 
 // ImageURL returns the image URL for a property
-func (p Property) ImageURL() string {
-	return fmt.Sprintf("https://bcdn.se/cache/primary_%v_140x94.jpg", p.BooliID)
+func (p Property) ImageURL(w, h int) string {
+	return fmt.Sprintf("https://bcdn.se/cache/primary_%v_%dx%d.jpg", p.BooliID, w, h)
 }
